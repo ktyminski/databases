@@ -1,0 +1,306 @@
+-------------------------------- Zad 1 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_liczba   DECIMAL(10, 4) := 2.7182;
+    v_tekst    VARCHAR2(50) := 'Baza danych to uporz¹dkowany zbiór danych';
+BEGIN
+    dbms_output.put_line('v_liczba == '
+    || v_liczba);
+    dbms_output.put_line('v_tekst == '
+    || v_tekst);
+END;
+/
+
+-------------------------------- Zad 2 ---------------------------------------
+
+SET SERVEROUTPUT ON;
+
+ACCEPT a PROMPT 'Liczba a: ';
+
+ACCEPT b PROMPT 'Liczba b: ';
+
+DECLARE
+    v_a   NUMBER(10) := &a;
+    v_b   NUMBER(10) := &b;
+BEGIN
+    dbms_output.put_line('iloraz: '
+    || v_a * v_b);
+END;
+/
+
+-------------------------------- Zad 3 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+ACCEPT r PROMPT 'Podaj promien: ';
+
+DECLARE
+    c_pi   DECIMAL(12,10) := 3.14159265;
+    v_r    NUMBER(5) := &r;
+BEGIN
+    dbms_output.put_line('Pole: '
+    || 4 * c_pi * power(v_r,2) );
+
+    dbms_output.put_line('Objetosc: '
+    || ( (4 / 3) * c_pi) * power(v_r,3) );
+
+END;
+/
+
+-------------------------------- Zad 4 ---------------------------------------
+DROP TABLE pracownik;
+
+CREATE TABLE pracownik (
+    id_pracownik   NUMBER(3),
+    CONSTRAINT pk_pracownik PRIMARY KEY ( id_pracownik ),
+    imie           VARCHAR2(15) NOT NULL,
+    nazwisko       VARCHAR2(20) NOT NULL
+);
+
+INSERT INTO pracownik (
+    id_pracownik,
+    imie,
+    nazwisko
+) VALUES (
+    1,
+    'Jan',
+    'Kowalski'
+);
+
+INSERT INTO pracownik (
+    id_pracownik,
+    imie,
+    nazwisko
+) VALUES (
+    2,
+    'Jerzy',
+    'Nowak'
+);
+
+INSERT INTO pracownik (
+    id_pracownik,
+    imie,
+    nazwisko
+) VALUES (
+    3,
+    'Anna',
+    'Ga³ka'
+);
+
+INSERT INTO pracownik (
+    id_pracownik,
+    imie,
+    nazwisko
+) VALUES (
+    4,
+    'Hanna',
+    'Mia³ka'
+);
+COMMIT;
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_ilosc   NUMBER(10);
+BEGIN
+    SELECT
+        COUNT(*)
+    INTO
+        v_ilosc
+    FROM
+        pracownik;
+
+    dbms_output.put_line('W tabeli pracownik jest '
+    || v_ilosc
+    || ' rekordów');
+END;
+/
+
+-------------------------------- Zad 5 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_imie       pracownik.imie%TYPE;
+    v_nazwisko   pracownik.nazwisko%TYPE;
+BEGIN
+    SELECT
+        imie
+    INTO
+        v_imie
+    FROM
+        pracownik
+    WHERE
+        id_pracownik = 3;
+
+    SELECT
+        nazwisko
+    INTO
+        v_nazwisko
+    FROM
+        pracownik
+    WHERE
+        id_pracownik = 3;
+
+    dbms_output.put_line('Imie: '
+    || v_imie);
+    dbms_output.put_line('Naziwsko: '
+    || v_nazwisko);
+END;
+/
+
+-------------------------------- Zad 6 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_rekord   pracownik%rowtype;
+BEGIN
+    SELECT
+        *
+    INTO
+        v_rekord
+    FROM
+        pracownik
+    WHERE
+        id_pracownik = 2;
+
+    dbms_output.put_line('Pracownik o identyfikatorze równym '
+    || v_rekord.id_pracownik
+    || ' to '
+    || v_rekord.imie
+    || ' '
+    || v_rekord.nazwisko);
+
+    v_rekord.id_pracownik := 10;
+
+    delete from pracownik where id_pracownik = 10;
+    INSERT INTO pracownik VALUES v_rekord;
+
+    FOR cursor1 IN (
+        SELECT
+            *
+        FROM
+            pracownik
+    ) LOOP
+        dbms_output.put_line('Id = '
+        || cursor1.id_pracownik
+        || ', Imie = '
+        || cursor1.imie
+        || ', Nazwisko = '
+        || cursor1.nazwisko);
+    END LOOP;
+    COMMIT;
+END;
+/
+
+-------------------------------- Zad 7 ---------------------------------------
+DROP TABLE info;
+
+CREATE TABLE info (
+  nazwa   VARCHAR(50) NOT NULL,
+  ilosc   INT
+);
+
+INSERT INTO info ( nazwa ) VALUES ( 'tabele' );
+
+INSERT INTO info ( nazwa ) VALUES ( 'widoki' );
+
+INSERT INTO info ( nazwa ) VALUES ( 'ograniczenia' );
+
+DECLARE
+  v_tables_count        NUMBER(5);
+  v_views_count         NUMBER(5);
+  v_constraints_count   NUMBER(5);
+
+  PROCEDURE update_info (
+    p_nazwa   IN VARCHAR2,
+    p_ilosc   IN INT
+  )
+    IS
+  BEGIN
+    UPDATE info
+      SET
+        ilosc = p_ilosc
+    WHERE
+      nazwa = p_nazwa;
+
+  END;
+
+BEGIN
+  SELECT
+    COUNT(*)
+  INTO
+    v_tables_count
+  FROM
+    user_tables;
+
+  update_info('tabele', v_tables_count);
+  SELECT
+    COUNT(*)
+  INTO
+    v_views_count
+  FROM
+    user_views;
+
+  update_info('widoki', v_views_count);
+  SELECT
+    COUNT(*)
+  INTO
+    v_constraints_count
+  FROM
+    user_constraints;
+
+  update_info('ograniczenia', v_constraints_count);
+END;
+/
+
+-------------------------------- Zad 8 ---------------------------------------
+DROP TABLE osoba;
+
+CREATE TABLE osoba (
+  id_osoba         NUMBER(10),
+  imie             VARCHAR2(20),
+  nazwisko         VARCHAR2(30),
+  roczne_zarobki   DECIMAL(12, 2)
+);
+
+INSERT INTO osoba VALUES (
+  1,
+  'Jan',
+  'Kowalski',
+  8765.12
+);
+
+INSERT INTO osoba VALUES (
+  2,
+  'Anna',
+  'Nowak',
+  6543.11
+);
+
+INSERT INTO osoba VALUES (
+  3,
+  'Ewa',
+  'Nowak',
+  5555.55
+);
+
+set serveroutput on;
+
+DECLARE
+  SUBTYPE kasa IS osoba.roczne_zarobki%TYPE;
+  v_roczne_zarobki   kasa;
+BEGIN
+  SELECT
+    roczne_zarobki
+  INTO
+    v_roczne_zarobki
+  FROM
+    osoba
+  WHERE
+    imie = 'Jan'
+    AND   nazwisko = 'Kowalski';
+
+  dbms_output.put_line('Jan Kowalski zarabia: ' || v_roczne_zarobki || ' z³ rocznie.');
+
+END;
+/

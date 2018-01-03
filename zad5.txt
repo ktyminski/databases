@@ -1,0 +1,197 @@
+-------------------------------- Zad 1 ---------------------------------------
+DROP TABLE pracownicy;
+
+CREATE TABLE pracownicy (
+  id_pracownik number(10),
+  imie varchar2(20),
+  nazwisko varchar2(20),
+  plec char(1),
+  data_urodzenia date,
+  data_zatrudnienia date,
+  stanowisko varchar2(15),
+  pensja number(10,2),
+  dodatek number(10,2)
+);
+
+INSERT INTO pracownicy VALUES (1,'Andrzej','Duda', 'M',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'dyrektor',2400,500);
+INSERT INTO pracownicy VALUES (2,'Jaros³aw','Kaczyñski', 'M',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'kierownik',2500,500);
+INSERT INTO pracownicy VALUES (3,'Antoni','Macierewicz', 'M',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'brygadzista',50000,500);
+INSERT INTO pracownicy VALUES (4,'Beata','Szyd³o', 'K',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'kierownik',2700,500);
+INSERT INTO pracownicy VALUES (5,'Anna5','Kowalska5', 'K',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'brygadzista',2400,500);
+INSERT INTO pracownicy VALUES (6,'Anna6','Kowalska6', 'K',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'magazynier',2300,500);
+INSERT INTO pracownicy VALUES (7,'Anna7','Kowalska7', 'K',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'magazynier',2600,500);
+INSERT INTO pracownicy VALUES (8,'Anna8','Kowalska8', 'K',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'magazynier',2700,500);
+INSERT INTO pracownicy VALUES (9,'Anna9','Kowalska9', 'K',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'magazynier',2800,500);
+INSERT INTO pracownicy VALUES (10,'Anna10','Kowalska10', 'K',to_date('1975-05-25', 'yyyy-mm-dd'),to_date('2001-12-01', 'yyyy-mm-dd'), 'magazynier',2300,500);
+COMMIT;
+
+DECLARE
+  CURSOR cur_pracownicy IS SELECT
+    id_pracownik
+                           FROM
+    (
+      SELECT
+        id_pracownik,
+        ordering
+      FROM
+        (
+          SELECT
+            id_pracownik,
+            RANK() OVER(
+              ORDER BY
+                nazwisko ASC,
+                imie ASC
+            ) AS ordering
+          FROM
+            pracownicy
+        )
+      WHERE
+        mod(ordering, 2) = 0
+    );
+
+  v_id   pracownicy.id_pracownik%TYPE;
+BEGIN
+  OPEN cur_pracownicy;
+  LOOP
+    FETCH cur_pracownicy INTO v_id;
+    DELETE FROM pracownicy WHERE
+      id_pracownik = v_id;
+
+    EXIT WHEN cur_pracownicy%notfound;
+  END LOOP;
+
+  CLOSE cur_pracownicy;
+  ROLLBACK; -- nastepne zadania korzystaja z tej tabeli wiec nie commituje zmian zwiazanych z usuwaniem rekordow
+END;
+/
+
+-------------------------------- Zad 2 ---------------------------------------
+set serveroutput on;
+
+declare
+  cursor cur_pracownicy is
+  select imie, nazwisko, data_zatrudnienia
+  from pracownicy;
+
+  v_imie pracownicy.imie%type;
+  v_nazwisko pracownicy.nazwisko%type;
+  v_data_zatrudnienia pracownicy.data_zatrudnienia%type;
+begin
+  open cur_pracownicy;
+  fetch cur_pracownicy into v_imie, v_nazwisko, v_data_zatrudnienia;
+
+  while cur_pracownicy%FOUND
+  loop
+    fetch cur_pracownicy into v_imie, v_nazwisko, v_data_zatrudnienia;
+    dbms_output.put_line('Pracownik ' || v_imie || ' ' || v_nazwisko || ' pracuje na stanowisku kierownika od ' || v_data_zatrudnienia);
+  end loop;
+
+end;
+/
+
+-------------------------------- Zad 3 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+DECLARE
+  CURSOR cur_pracownicy IS SELECT
+    *
+                           FROM
+    (
+      SELECT
+        pracownicy.*,
+        RANK() OVER(
+          ORDER BY
+            pensja ASC
+        ) AS pensja_rank
+      FROM
+        pracownicy
+    )
+                           WHERE
+    pensja_rank <= 3;
+
+BEGIN
+  FOR r_pracownik IN cur_pracownicy LOOP
+    dbms_output.put_line('Na miejscu '
+    || r_pracownik.pensja_rank
+    || ' znajduje siê '
+    || r_pracownik.imie
+    || ' '
+    || r_pracownik.nazwisko);
+  END LOOP;
+END;
+/
+
+-------------------------------- Zad 4 ---------------------------------------
+ACCEPT p_stanowisko PROMPT 'Podaj stanowisko: ';
+
+DECLARE
+  v_stanowisko   VARCHAR2(10) := '&p_stanowisko';
+  CURSOR cur_pracownicy (
+    v_stanowisko pracownicy.stanowisko%TYPE
+  ) IS SELECT
+    *
+       FROM
+    pracownicy
+       WHERE
+    stanowisko = v_stanowisko
+  ORDER BY
+    nazwisko ASC,
+    imie ASC;
+
+BEGIN
+  FOR r_pracownik IN cur_pracownicy(v_stanowisko) LOOP
+    dbms_output.put_line('imie: '
+    || r_pracownik.imie
+    || ' nazwisko: '
+    || r_pracownik.nazwisko);
+  END LOOP;
+END;
+/
+-------------------------------- Zad 5 ---------------------------------------
+set serveroutput on;
+
+declare
+  v_procent number(4,2) := 0;
+  v_temp number(4,2);
+begin
+  for r_pracownik in (select * from pracownicy)
+  loop
+    if r_pracownik.pensja < 3000 then
+      v_temp := ((3000 / r_pracownik.pensja) * 100) - 100;
+      v_procent := v_procent + v_temp;
+    end if;
+
+    -- za kazdy rok pracy dodatkowe 1%
+    v_temp := TRUNC((SYSDATE-r_pracownik.data_zatrudnienia)/365);
+    v_procent := v_procent + v_temp;
+
+    -- dyrektor 20%, kierownik 10%, brygadzista 5%
+    case r_pracownik.stanowisko
+      when 'dyrektor' then v_temp := 20;
+      when 'kierownik' then v_temp := 10;
+      when 'brygadzista' then v_temp := 5;
+      else v_temp := 0;
+    end case;
+    v_procent := v_procent + v_temp;
+
+    -- kobiety 5%
+    if r_pracownik.plec = 'K' then
+      v_temp := 5;
+      v_procent := v_procent + v_temp;
+    end if;
+
+    if v_procent > 60 then
+      v_procent := 60;
+    end if;
+
+    update pracownicy
+    set dodatek = pensja * ((v_procent + 100)/100)
+    where id_pracownik = r_pracownik.id_pracownik;
+  end loop;
+
+  commit;
+end;
+/
+-------------------------------- Zad 6 ---------------------------------------
+
+-------------------------------- Zad 7 ---------------------------------------

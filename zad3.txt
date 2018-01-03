@@ -1,0 +1,468 @@
+-------------------------------- Zad 1 ---------------------------------------
+VARIABLE v_wynik NUMBER(10);
+
+SET SERVEROUTPUT ON;
+
+ACCEPT liczba1 PROMPT 'Podaj liczba1: ';
+
+ACCEPT liczba2 PROMPT 'Podaj liczba2: ';
+
+<< etykieta_zewnetrzna >> DECLARE
+  v_liczba   NUMBER(10) := &liczba1;
+BEGIN
+  DECLARE
+    v_liczba   NUMBER(10) := &liczba2;
+  BEGIN
+    dbms_output.put_line('wynik: '
+    || (etykieta_zewnetrzna.v_liczba * v_liczba) );
+  END;
+END;
+/
+
+-------------------------------- Zad 2 ---------------------------------------
+DROP TABLE buty;
+
+CREATE TABLE buty (
+  id_buty   INT,
+  typ       VARCHAR2(20),
+  marka     VARCHAR2(20),
+  rozmiar   NUMBER(8, 2)
+);
+
+INSERT INTO buty VALUES (
+  1,
+  'sportowe',
+  'nike',
+  44
+);
+
+INSERT INTO buty VALUES (
+  2,
+  'sportowe',
+  'reebok',
+  45
+);
+
+INSERT INTO buty VALUES (
+  3,
+  'pantofle',
+  'fly-high',
+  46
+);
+
+ACCEPT rozmiar_buta PROMPT 'Podaj rozmiar';
+
+DECLARE
+  v_rozmiar_buta   NUMBER(10) := &rozmiar_buta;
+  v_count          NUMBER(10);
+BEGIN
+  SELECT
+    COUNT(*)
+  INTO
+    v_count
+  FROM
+    buty
+  WHERE
+    rozmiar = v_rozmiar_buta;
+
+  IF
+    v_count > 0
+  THEN
+    dbms_output.put_line('Posiadamy buty w twoim rozmiarze, zapraszamy');
+  ELSE
+    dbms_output.put_line('Nie posiadamy butów w twoim rozmiarze, przepraszamy');
+  END IF;
+
+END;
+/
+
+-------------------------------- Zad 3 ---------------------------------------
+ACCEPT numer_misionca PROMPT 'Podaj numer misionca: ';
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_numer_misionca   NUMBER(2) := &numer_misionca;
+BEGIN
+  CASE
+    v_numer_misionca
+    WHEN 1 THEN
+      dbms_output.put_line('Sty');
+    WHEN 2 THEN
+      dbms_output.put_line('Lut');
+    WHEN 3 THEN
+      dbms_output.put_line('Mar');
+    WHEN 3 THEN
+      dbms_output.put_line('Kwi');
+    WHEN 3 THEN
+      dbms_output.put_line('Maj');
+    WHEN 3 THEN
+      dbms_output.put_line('Cze');
+    WHEN 3 THEN
+      dbms_output.put_line('Lip');
+    WHEN 3 THEN
+      dbms_output.put_line('Sie');
+    WHEN 3 THEN
+      dbms_output.put_line('Wrz');
+    WHEN 3 THEN
+      dbms_output.put_line('Paz');
+    WHEN 3 THEN
+      dbms_output.put_line('Lis');
+    WHEN 3 THEN
+      dbms_output.put_line('Gru');
+    ELSE
+      dbms_output.put_line('NIE MA TAKIEGO MISIONCA!1!11111!');
+  END CASE;
+END;
+/
+
+-------------------------------- Zad 4 ---------------------------------------
+DROP TABLE student;
+
+CREATE TABLE student (
+  id_student   NUMBER(11),
+  imie         VARCHAR2(15),
+  nazwisko     VARCHAR2(20),
+  srednia      NUMBER(4, 2),
+  stypendium   NUMBER(8, 2)
+);
+
+INSERT INTO student VALUES (
+  1,
+  'Jan',
+  'Kowalski',
+  5,
+  2000
+);
+
+INSERT INTO student VALUES (
+  2,
+  'Anna',
+  'Zdolna',
+  4,
+  1000
+);
+
+INSERT INTO student VALUES (
+  3,
+  'Agata',
+  'Muza',
+  3.5,
+  100
+);
+
+INSERT INTO student VALUES (
+  4,
+  'Anna',
+  'Kula',
+  3,
+  1
+);
+
+INSERT INTO student VALUES (
+  5,
+  'Kacper',
+  'Adamek',
+  2,
+  0
+);
+
+ACCEPT id_student PROMPT 'Podaj id studenta: ';
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_id_student       student.id_student%TYPE := &id_student;
+  v_stypendium       student.stypendium%TYPE;
+  v_stypendium_min   student.stypendium%TYPE;
+  v_stypendium_max   student.stypendium%TYPE;
+  v_stypendium_avg   student.stypendium%TYPE;
+BEGIN
+  SELECT
+    MIN(stypendium)
+  INTO
+    v_stypendium_min
+  FROM
+    student;
+
+  SELECT
+    MAX(stypendium)
+  INTO
+    v_stypendium_max
+  FROM
+    student;
+
+  SELECT
+    AVG(stypendium)
+  INTO
+    v_stypendium_avg
+  FROM
+    student;
+
+  SELECT
+    stypendium
+  INTO
+    v_stypendium
+  FROM
+    student
+  WHERE
+    id_student = v_id_student;
+
+  IF
+    v_stypendium = v_stypendium_max
+  THEN
+    dbms_output.put_line('Najwy¿sze stypendium');
+  ELSIF v_stypendium = v_stypendium_min THEN
+    dbms_output.put_line('Najnizsze stypendium');
+  ELSIF v_stypendium > v_stypendium_avg THEN
+    dbms_output.put_line('Stypendium powy¿ej œredniej');
+  ELSIF v_stypendium < v_stypendium_avg THEN
+    dbms_output.put_line('Stypendium poni¿ej œredniej');
+  ELSE
+    dbms_output.put_line('Stypendium równe œredniej');
+  END IF;
+
+END;
+/
+
+-------------------------------- Zad 5 ---------------------------------------
+DROP TABLE student;
+
+CREATE TABLE student (
+  id_student   NUMBER(11),
+  imie         VARCHAR2(15),
+  nazwisko     VARCHAR2(20),
+  srednia      NUMBER(4, 2),
+  stypendium   NUMBER(8, 2)
+);
+
+INSERT INTO student VALUES (
+  1,
+  'Jan',
+  'Kowalski',
+  5,
+  2000
+);
+
+INSERT INTO student VALUES (
+  2,
+  'Anna',
+  'Zdolna',
+  4,
+  1000
+);
+
+INSERT INTO student VALUES (
+  3,
+  'Agata',
+  'Muza',
+  3.5,
+  100
+);
+
+INSERT INTO student VALUES (
+  4,
+  'Anna',
+  'Kula',
+  3,
+  1
+);
+
+INSERT INTO student VALUES (
+  5,
+  'Kacper',
+  'Adamek',
+  2,
+  0
+);
+
+ACCEPT id_student PROMPT 'Podaj id studenta: ';
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_id_student       student.id_student%TYPE := &id_student;
+  v_stypendium       student.stypendium%TYPE;
+  v_stypendium_min   student.stypendium%TYPE;
+  v_stypendium_max   student.stypendium%TYPE;
+  v_stypendium_avg   student.stypendium%TYPE;
+BEGIN
+  SELECT
+    MIN(stypendium)
+  INTO
+    v_stypendium_min
+  FROM
+    student;
+
+  SELECT
+    MAX(stypendium)
+  INTO
+    v_stypendium_max
+  FROM
+    student;
+
+  SELECT
+    AVG(stypendium)
+  INTO
+    v_stypendium_avg
+  FROM
+    student;
+
+  SELECT
+    stypendium
+  INTO
+    v_stypendium
+  FROM
+    student
+  WHERE
+    id_student = v_id_student;
+
+  CASE
+    WHEN v_stypendium = v_stypendium_max THEN
+      dbms_output.put_line('Najwy¿sze stypendium');
+    WHEN v_stypendium = v_stypendium_min THEN
+      dbms_output.put_line('Najnizsze stypendium');
+    WHEN v_stypendium > v_stypendium_avg THEN
+      dbms_output.put_line('Stypendium powy¿ej œredniej');
+    WHEN v_stypendium < v_stypendium_avg THEN
+      dbms_output.put_line('Stypendium poni¿ej œredniej');
+    ELSE
+      dbms_output.put_line('Stypendium równe œredniej');
+  END CASE;
+
+END;
+/
+
+-------------------------------- Zad 6 ---------------------------------------
+DROP TABLE osoba;
+
+CREATE TABLE osoba (
+  id_osoba   NUMBER(10),
+  imie       VARCHAR2(20),
+  nazwisko   VARCHAR2(40),
+  pensja     DECIMAL(10, 2)
+);
+
+INSERT INTO osoba VALUES (
+  1,
+  'Jan',
+  'Kowalski',
+  1900
+);
+
+INSERT INTO osoba VALUES (
+  2,
+  'Anna',
+  'Makurat',
+  2100
+);
+
+INSERT INTO osoba VALUES (
+  3,
+  'Jerzy',
+  '£oœ',
+  2300
+);
+
+INSERT INTO osoba VALUES (
+  4,
+  'Ewa',
+  'Kot1',
+  2601
+);
+
+INSERT INTO osoba VALUES (
+  4,
+  'Ewa',
+  'Kot2',
+  2602
+);
+
+SET SERVEROUTPUT ON;
+
+ACCEPT id_osoba PROMPT 'Podaj id osoby: ';
+
+DECLARE
+  v_id_osoba      osoba.id_osoba%TYPE := &id_osoba;
+  r_osoba         osoba%rowtype;
+  v_osoba_count   NUMBER(10);
+
+  PROCEDURE update_pensja (
+    p_osoba IN osoba%rowtype
+  )
+    IS
+  BEGIN
+    IF
+      r_osoba.pensja < 2000
+    THEN
+      r_osoba.pensja := r_osoba.pensja * 1.1;
+      dbms_output.put_line('Pensja ponizej 2000zl. Po podwyzce: '
+      || r_osoba.pensja);
+    ELSIF r_osoba.pensja > 3000 THEN
+      r_osoba.pensja := r_osoba.pensja * 0.98;
+      dbms_output.put_line('Pensja powyzej 3000zl. Po obnizce: '
+      || r_osoba.pensja);
+    ELSE
+      dbms_output.put_line('Pensja pomiedzy 2000zl a 3000zl');
+    END IF;
+
+    UPDATE osoba
+      SET
+        row = r_osoba
+    WHERE
+      id_osoba = r_osoba.id_osoba;
+
+    COMMIT;
+  END;
+
+BEGIN
+  SELECT
+    COUNT(*)
+  INTO
+    v_osoba_count
+  FROM
+    osoba
+  WHERE
+    id_osoba = v_id_osoba;
+
+  IF
+    v_osoba_count = 0
+  THEN
+    dbms_output.put_line('Nie znaleziono osoby o podanym id');
+  ELSIF v_osoba_count > 1 THEN
+    dbms_output.put_line('Znaleziono wiecej niz jedna osobe o podanym id');
+  ELSE
+    SELECT
+      *
+    INTO
+      r_osoba
+    FROM
+      osoba
+    WHERE
+      id_osoba = v_id_osoba;
+
+    dbms_output.put_line('Znaleziono jedna osobe. Pensja to: '
+    || r_osoba.pensja);
+    update_pensja(r_osoba);
+  END IF;
+
+END;
+/
+
+-------------------------------- Zad 7 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+ACCEPT wybor PROMPT '''D'' - data systemowa; ''C'' - czas systemowy';
+
+DECLARE
+  v_wybor   CHAR(1) := &wybor;
+BEGIN
+  IF
+    v_wybor = 'D'
+  THEN
+    dbms_output.put_line('Data systemowa: ' || SYSDATE);
+  ELSIF v_wybor = 'C' THEN
+    dbms_output.put_line('Czas systemowy: ' || CURRENT_TIMESTAMP);
+  END IF;
+END;
+/

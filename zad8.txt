@@ -1,0 +1,288 @@
+-------------------------------- Zad 1 ---------------------------------------
+CREATE OR REPLACE PACKAGE physics IS
+  c CONSTANT NUMBER(9) := 299792458;
+  g CONSTANT NUMBER(6, 5) := 9.80665;
+END physics;
+/
+
+SET SERVEROUTPUT ON;
+
+BEGIN
+  dbms_output.put_line('physics.c = ' || physics.c);
+  dbms_output.put_line('physics.g = ' || physics.g);
+END;
+/
+
+-------------------------------- Zad 2 ---------------------------------------
+DROP TABLE osoba;
+
+CREATE TABLE osoba (
+  id         INT,
+  imie       VARCHAR2(15),
+  nazwisko   VARCHAR2(25)
+);
+
+INSERT INTO osoba VALUES (
+  1,
+  'Andrzej',
+  'Duda'
+);
+
+INSERT INTO osoba VALUES (
+  2,
+  'Jaros³aw',
+  'Kaczyñski'
+);
+
+INSERT INTO osoba VALUES (
+  3,
+  'Antoni',
+  'Macierewicz'
+);
+
+INSERT INTO osoba VALUES (
+  4,
+  'Antoni',
+  'Banderas'
+);
+
+INSERT INTO osoba VALUES (
+  5,
+  'Agata',
+  'Duda'
+);
+
+CREATE OR REPLACE PACKAGE statystyki IS
+  FUNCTION liczba_osob RETURN INT;
+
+  FUNCTION liczba_unikatowych_imion RETURN INT;
+
+  FUNCTION liczba_unikatowych_nazwisk RETURN INT;
+
+END statystyki;
+/
+
+CREATE OR REPLACE PACKAGE BODY statystyki IS
+
+  FUNCTION liczba_osob RETURN INT IS
+    v_result   INT;
+  BEGIN
+    SELECT COUNT(*) INTO
+      v_result
+    FROM osoba;
+
+    RETURN v_result;
+  END liczba_osob;
+
+  FUNCTION liczba_unikatowych_imion RETURN INT IS
+    v_result   INT;
+  BEGIN
+    SELECT COUNT(*) INTO
+      v_result
+    FROM (
+      SELECT DISTINCT imie FROM osoba
+    );
+
+    RETURN v_result;
+  END liczba_unikatowych_imion;
+
+  FUNCTION liczba_unikatowych_nazwisk RETURN INT IS
+    v_result   INT;
+  BEGIN
+    SELECT COUNT(*) INTO
+      v_result
+    FROM (
+      SELECT DISTINCT nazwisko FROM osoba
+    );
+
+    RETURN v_result;
+  END liczba_unikatowych_nazwisk;
+
+END statystyki;
+/
+
+SET SERVEROUTPUT ON;
+
+BEGIN
+  dbms_output.put_line('liczba_osob = ' || statystyki.liczba_osob() );
+  dbms_output.put_line('liczba_unikatowych_imion = ' || statystyki.liczba_unikatowych_imion() );
+  dbms_output.put_line('liczba_unikatowych_nazwisk = ' || statystyki.liczba_unikatowych_nazwisk() );
+END;
+/
+-------------------------------- Zad 3 ---------------------------------------
+DROP TABLE produkt;
+
+CREATE TABLE produkt (
+  id_produkt   INT,
+  nazwa        VARCHAR2(20),
+  cena         DECIMAL(10, 2)
+);
+
+INSERT INTO produkt VALUES (
+  1,
+  'Rolada ustrzycka',
+  5.49
+);
+
+INSERT INTO produkt VALUES (
+  2,
+  'Polêdwica sopocka',
+  3.49
+);
+
+INSERT INTO produkt VALUES (
+  3,
+  'Baleron gotowany',
+  5.69
+);
+
+INSERT INTO produkt VALUES (
+  4,
+  'Mortadela',
+  2.39
+);
+
+INSERT INTO produkt VALUES (
+  5,
+  'Pasztetowa',
+  1.99
+);
+
+CREATE OR REPLACE PACKAGE ceny IS
+  PROCEDURE podwyzka (
+    p_procent INT
+  );
+
+  PROCEDURE podwyzka (
+    p_procent INT,
+    p_id_produkt INT
+  );
+
+END;
+/
+
+CREATE OR REPLACE PACKAGE BODY ceny IS
+
+  PROCEDURE podwyzka (
+    p_procent INT
+  )
+    IS
+  BEGIN
+    UPDATE produkt
+      SET
+        cena = cena * ( (p_procent + 100) / 100 );
+
+  END;
+
+  PROCEDURE podwyzka (
+    p_procent INT,
+    p_id_produkt INT
+  )
+    IS
+  BEGIN
+    UPDATE produkt
+      SET
+        cena = cena * ( (p_procent + 100) / 100 )
+    WHERE id_produkt = p_id_produkt;
+
+  END;
+
+END;
+/
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_temp   decimal(10,2);
+BEGIN
+  SELECT cena INTO
+    v_temp
+  FROM produkt
+  WHERE id_produkt = 1;
+
+  dbms_output.put_line('Produkt 1 przed podwyzka o 50%: ' || v_temp);
+  ceny.podwyzka(50, 1);
+  SELECT cena INTO
+    v_temp
+  FROM produkt
+  WHERE id_produkt = 1;
+
+  dbms_output.put_line('Produkt 1 po podwyzce o 50%: ' || v_temp);
+  dbms_output.put_line('Wszystkie produkty przed podwyzka o 100%');
+  FOR r_produkt IN (
+    SELECT * FROM produkt
+  ) LOOP
+    dbms_output.put_line('id_produkt: ' || r_produkt.id_produkt || '---- cena: ' || r_produkt.cena);
+  END LOOP;
+
+  ceny.podwyzka(100);
+  dbms_output.put_line('Wszystkie produkty po podwyzce o 100%');
+  FOR r_produkt IN (
+    SELECT * FROM produkt
+  ) LOOP
+    dbms_output.put_line('id_produkt: ' || r_produkt.id_produkt || '---- cena: ' || r_produkt.cena);
+  END LOOP;
+
+  ROLLBACK;
+END;
+/
+-------------------------------- Zad 4 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+CREATE OR REPLACE PACKAGE lzesp IS
+  TYPE tzesp IS RECORD ( re NUMBER, im NUMBER );
+
+  zero tzesp;
+  jeden tzesp;
+
+  PROCEDURE wypisz (z tzesp);
+  FUNCTION suma (z1 tzesp, z2 tzesp) RETURN tzesp;
+  FUNCTION roznica (z1 tzesp, z2 tzesp) RETURN tzesp;
+
+END lzesp;
+/
+
+CREATE OR REPLACE PACKAGE BODY lzesp IS
+
+  PROCEDURE wypisz (z tzesp) IS
+  BEGIN
+    dbms_output.put_line('(' || z.re || ', ' || z.im || ')');
+  END wypisz;
+
+  FUNCTION suma (z1 tzesp, z2 tzesp)
+  RETURN tzesp
+  IS
+    v_z   tzesp;
+  BEGIN
+    v_z.re := z1.re + z2.re;
+    v_z.im := z1.im + z2.im;
+    RETURN v_z;
+  END suma;
+
+  FUNCTION roznica (z1 tzesp, z2 tzesp) RETURN tzesp
+    IS   v_z tzesp;
+  BEGIN
+    v_z.re := z1.re - z2.re;
+    v_z.im := z1.im - z2.im;
+    RETURN v_z;
+  END roznica;
+
+BEGIN
+  zero.re := 0;
+  zero.im := 0;
+  jeden.re := 1;
+  jeden.im := 1;
+END lzesp;
+/
+
+DECLARE
+  a   lzesp.tzesp;
+  b   lzesp.tzesp;
+BEGIN
+  a.re := 5;
+  a.im := 6;
+  b := lzesp.suma(lzesp.roznica(lzesp.zero, lzesp.jeden), a);
+
+  lzesp.wypisz(b);
+END;
+/

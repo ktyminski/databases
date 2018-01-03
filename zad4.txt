@@ -1,0 +1,258 @@
+-------------------------------- Zad 1 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_counter   NUMBER(3) := 0;
+BEGIN
+  LOOP
+    IF
+      v_counter > 100
+    THEN
+      EXIT;
+    END IF;
+    dbms_output.put_line('2^'
+    || v_counter
+    || ' == '
+    || power(2, v_counter) );
+
+    v_counter := v_counter + 1;
+  END LOOP;
+END;
+/
+
+-------------------------------- Zad 2 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+ACCEPT n PROMPT 'Podaj n: ';
+
+DECLARE
+  v_result   NUMBER(38) := 1;
+  v_n        NUMBER(10) := &n;
+BEGIN
+  FOR v_i IN 1..v_n LOOP
+    v_result := v_result * v_i;
+  END LOOP;
+  dbms_output.put_line(v_n
+  || '! == '
+  || v_result);
+END;
+/
+-------------------------------- Zad 3 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_i   NUMBER(10) := 1;
+BEGIN
+  WHILE v_i <= 5 LOOP
+    v_i := v_i + 1;
+    dbms_output.put_line(round(dbms_random.value(2, 5) ) );
+  END LOOP;
+END;
+/
+-------------------------------- Zad 4 ---------------------------------------
+DROP TABLE nowa;
+
+CREATE TABLE nowa (
+  liczba   VARCHAR2(10)
+);
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_i   NUMBER(10) := 1;
+BEGIN
+  FOR v_i IN 1..113 LOOP
+    IF
+      v_i = 5 OR v_i = 7 OR v_i = 55 OR v_i = 77
+    THEN
+      continue;
+    END IF;
+
+    INSERT INTO nowa VALUES ( TO_CHAR(v_i) );
+
+  END LOOP;
+END;
+/
+
+SELECT * FROM nowa;
+-------------------------------- Zad 5 ---------------------------------------
+DROP TABLE nagroda;
+
+CREATE TABLE nagroda (
+  id_nagroda   NUMBER(4),
+  nazwa        VARCHAR2(20),
+  kwota        DECIMAL(10, 2)
+);
+
+SET SERVEROUTPUT ON;
+
+BEGIN
+  FOR v_i IN 1..1000 LOOP
+    INSERT INTO nagroda VALUES (
+      v_i,
+      'nazwa'
+      || lpad(v_i, 4, 0),
+      ( mod(v_i * 123, 10000) ) / 3
+    );
+
+  END LOOP;
+END;
+/
+
+SELECT * FROM nagroda;
+-------------------------------- Zad 6 ---------------------------------------
+DROP TABLE wyplata;
+
+CREATE TABLE wyplata (
+  id_wyplata   NUMBER(11) PRIMARY KEY,
+  imie         VARCHAR2(15),
+  nazwisko     VARCHAR2(20),
+  ile_dni      INT,
+  kwota        NUMBER(22, 2)
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  1,
+  'Jan',
+  'Kowalski',
+  1
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  2,
+  'Jerzy',
+  'Nowak',
+  5
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  3,
+  'Anna',
+  'Mak',
+  7
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  4,
+  'Ewa',
+  'Hak',
+  11
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  5,
+  'Joanna',
+  'Blondi',
+  14
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  6,
+  'Adam',
+  'Mocny',
+  15
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  7,
+  'Krzysztof',
+  'Gacek',
+  18
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  8,
+  'Jolanta',
+  'Fajna',
+  21
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  9,
+  'Anzelm',
+  'Agryf',
+  26
+);
+
+INSERT INTO wyplata (
+  id_wyplata,
+  imie,
+  nazwisko,
+  ile_dni
+) VALUES (
+  10,
+  'Wioletta',
+  'Markowska',
+  30
+);
+
+SET SERVEROUTPUT ON;
+
+BEGIN
+  FOR r_wyplata IN (
+    SELECT
+      *
+    FROM
+      wyplata
+  ) LOOP
+    UPDATE wyplata
+      SET
+        kwota = power(2, r_wyplata.ile_dni - 1)
+    WHERE
+      id_wyplata = r_wyplata.id_wyplata;
+
+  END LOOP;
+
+  COMMIT;
+END;
+/
+
+SELECT
+  *
+FROM
+  wyplata;

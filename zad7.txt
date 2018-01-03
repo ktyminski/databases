@@ -1,0 +1,209 @@
+-------------------------------- Zad 1 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_x1 NUMBER(10, 4);
+  v_y1 NUMBER(10, 4);
+  v_x2 NUMBER(10, 4);
+  v_y2 NUMBER(10, 4);
+
+  FUNCTION odleglosc (
+    p_x1 NUMBER, p_y1 NUMBER, p_x2 NUMBER, p_y2 NUMBER
+  ) RETURN NUMBER IS
+    v_result NUMBER;
+  BEGIN
+    RETURN sqrt(power(abs( (p_x1 - p_x2) ), 2) + power(abs( (p_y1 - p_y2) ), 2) );
+  END;
+
+BEGIN
+  v_x1 := 0;
+  v_y1 := 0;
+  v_x2 := 5;
+  v_y2 := 5;
+  dbms_output.put_line('Odleglosc miedzy podanymi punktami to: ' || odleglosc(v_x1, v_y1, v_x2, v_y2) );
+
+END;
+/
+-------------------------------- Zad 2 ---------------------------------------
+DROP TABLE produkt;
+
+CREATE TABLE produkt (
+  id      NUMBER(10), nazwa   VARCHAR2(20), cena    DECIMAL(10, 2)
+);
+
+INSERT INTO produkt VALUES (
+  1, 'Rolada ustrzycka', 5.49
+);
+
+INSERT INTO produkt VALUES (
+  2, 'Polêdwica sopocka', 3.49
+);
+
+INSERT INTO produkt VALUES (
+  3, 'Baleron gotowany', 5.69
+);
+
+INSERT INTO produkt VALUES (
+  4, 'Mortadela', 2.39
+);
+
+INSERT INTO produkt VALUES (
+  5, 'Pasztetowa', 1.99
+);
+
+COMMIT;
+
+DECLARE
+  PROCEDURE aktualizacja_ceny (
+    p_id_produkt IN produkt.id%TYPE, p_procent IN NUMBER
+  )
+    IS
+  BEGIN
+    UPDATE produkt
+      SET
+        cena = cena * ( ( ( p_procent + 100 ) ) / 100 )
+    WHERE id = p_id_produkt;
+
+  END;
+
+BEGIN
+  aktualizacja_ceny(1, 10);
+  aktualizacja_ceny(5, 20);
+  ROLLBACK;
+END;
+/
+-------------------------------- Zad 3 ---------------------------------------
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_data_ur VARCHAR2(10);
+
+  FUNCTION wiek (
+    p_data_ur DATE
+  ) RETURN NUMBER
+    IS
+  BEGIN
+    RETURN trunc( (SYSDATE - p_data_ur) / 365);
+  END;
+
+BEGIN
+  v_data_ur := '30-05-1994';
+  dbms_output.put_line('Urodzilem sie: ' || v_data_ur || '. Mój wiek: ' || wiek(TO_DATE(v_data_ur, 'dd-mm-yyyy') ) );
+
+END;
+/
+-------------------------------- Zad 4 ---------------------------------------
+DROP TABLE l_pierwsze;
+
+CREATE TABLE l_pierwsze (
+  liczba   INT
+);
+
+DECLARE
+  FUNCTION czy_pierwsza (
+    p_liczba IN NUMBER
+  ) RETURN BOOLEAN
+    IS
+  BEGIN
+    FOR i IN 2.. ( p_liczba - 1 ) LOOP
+      IF
+        MOD(p_liczba, i) = 0
+      THEN
+        RETURN false;
+      END IF;
+    END LOOP;
+
+    RETURN true;
+  END;
+
+  PROCEDURE wpisz_liczby_pierwsze (
+    p_od IN NUMBER, p_do IN NUMBER
+  ) IS
+    v_i NUMBER(10);
+  BEGIN
+    FOR liczba IN p_od..p_do LOOP
+      IF
+        czy_pierwsza(liczba)
+      THEN
+        INSERT INTO l_pierwsze VALUES ( liczba );
+
+      END IF;
+    END LOOP;
+  END;
+
+BEGIN
+  wpisz_liczby_pierwsze(1, 100);
+END;
+/
+
+SELECT * FROM l_pierwsze;
+-------------------------------- Zad 5 ---------------------------------------
+DROP TABLE urodziny;
+
+CREATE TABLE urodziny (
+  id_osoba   NUMBER(10), imie       VARCHAR2(15), nazwisko   VARCHAR2(30), data_ur    DATE
+);
+
+INSERT INTO urodziny VALUES (
+  1, 'Maciej', 'Pos³uszny', TO_DATE('30-05-1994', 'dd-mm-yyyy')
+);
+
+INSERT INTO urodziny VALUES (
+  2, 'Wawrzyniec', 'Wycichowski', TO_DATE('13-10-2017', 'dd-mm-yyyy')
+);
+
+COMMIT;
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+  FUNCTION czy_piatek_trzynastego (
+    p_data IN DATE
+  ) RETURN BOOLEAN
+    IS
+  BEGIN
+    -- niedziela to pierwszy dzien tygodnia, wiec piatek jest 6-ty
+    IF
+      TO_CHAR(p_data, 'D') = 6
+    THEN
+      IF
+        TO_CHAR(p_data, 'dd') = '13'
+      THEN
+        RETURN true;
+      END IF;
+    END IF;
+
+    RETURN false;
+  END;
+
+  PROCEDURE wypisz_piatki_trzynastego (
+    p_data_od IN DATE, p_data_do IN DATE
+  )
+    IS
+  BEGIN
+    FOR i IN 0..trunc(p_data_do - p_data_od) LOOP
+      IF
+        czy_piatek_trzynastego(p_data_od + i)
+      THEN
+        dbms_output.put_line(p_data_od + i || ' to Piatek 13-go!');
+      END IF;
+    END LOOP;
+  END;
+
+BEGIN
+  dbms_output.put_line('Osoby, które urodzi³y siê w pi¹tek 13-go:');
+  FOR r_urodziny IN (
+    SELECT * FROM urodziny
+  ) LOOP
+    IF
+      czy_piatek_trzynastego(r_urodziny.data_ur)
+    THEN
+      dbms_output.put_line(r_urodziny.imie || ' ' || r_urodziny.nazwisko);
+    END IF;
+  END LOOP;
+
+  dbms_output.put_line('');
+  dbms_output.put_line('Piatki trzynastego od 1 stycznia 2017 do teraz:');
+  wypisz_piatki_trzynastego(TO_DATE('01-01-2017', 'dd-mm-yyyy'), SYSDATE);
+END;
+/
