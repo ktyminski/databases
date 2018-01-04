@@ -1,0 +1,97 @@
+-------------------------1-------------------------------
+SET SERVEROUTPUT ON;
+
+DECLARE
+  v_i   NUMBER(10) := 1;
+
+  PROCEDURE proc (
+   p_LICZBA IN NUMBER
+  )
+   IS
+    BEGIN
+         dbms_output.put_line(p_LICZBA);
+    END;
+BEGIN
+  WHILE v_i <= 5 LOOP
+    v_i := v_i + 1;
+    proc(round(dbms_random.value(2, 5)));
+  END LOOP;
+END;
+/
+
+---------------------2---------------------------------------
+
+SET SERVEROUTPUT ON;
+
+CREATE TABLE klient (
+    id_klient INT   
+);
+
+DECLARE
+  CURSOR curs IS SELECT * FROM klient;
+  v_x1 NUMBER(10, 4);
+  v_y1 NUMBER(10, 4);
+  v_x2 NUMBER(10, 4);
+  v_y2 NUMBER(10, 4);
+
+  FUNCTION odleglosc (
+    p_x1 NUMBER, p_y1 NUMBER, p_x2 NUMBER, p_y2 NUMBER
+  ) RETURN NUMBER IS
+    v_result NUMBER;
+  BEGIN
+    OPEN curs;
+    OPEN curs;
+    RETURN sqrt(power(abs( (p_x1 - p_x2) ), 2) + power(abs( (p_y1 - p_y2) ), 2) );
+  END;
+
+BEGIN
+  v_x1 := 0;
+  v_y1 := 0;
+  v_x2 := 5;
+  v_y2 := 5;
+  dbms_output.put_line('Odleglosc miedzy podanymi punktami to: ' || odleglosc(v_x1, v_y1, v_x2, v_y2) );
+  
+   EXCEPTION
+        WHEN CURSOR_ALREADY_OPEN THEN
+         dbms_output.put_line('Sory mordo');
+
+END;
+/
+
+----------------------------------3--------------------------------
+
+SET SERVEROUTPUT ON;
+DECLARE
+PROCEDURE zad3(v_n INTEGER)
+IS v_fib1 INTEGER := 0; v_fib2 INTEGER := 1;
+BEGIN
+  FOR v_i IN 1..v_n
+  LOOP
+    IF(MOD(v_i, 2) = 1) THEN
+      DBMS_OUTPUT.PUT_LINE(v_fib1);
+      v_fib1 := v_fib1 + v_fib2;
+    ELSE
+      DBMS_OUTPUT.PUT_LINE(v_fib2);
+      v_fib2 := v_fib1 + v_fib2;
+    END IF;
+  END LOOP;
+END;
+
+BEGIN
+    zad3(8);
+END;
+/
+
+----------------------------4--------------------------------------
+
+CREATE OR REPLACE PACKAGE zad4
+IS
+  PROCEDURE zad1;
+  FUNCTION zad2(o CHAR) RETURN VARCHAR;
+  PROCEDURE zad3(v_n INTEGER);
+END zad4;
+
+/
+
+CREATE OR REPLACE PACKAGE BODY zad4
+IS
